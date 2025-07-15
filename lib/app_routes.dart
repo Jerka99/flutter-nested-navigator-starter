@@ -1,46 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/details_page.dart';
-import 'package:untitled/pages/first_page.dart';
 import 'package:untitled/scaffold_with_nested_navigators.dart';
-import 'async_redux/connectors/login_page_connector.dart';
-import 'async_redux/connectors/page_2_connector.dart';
-import 'async_redux/connectors/profile_connector.dart';
 
 class AppRoutes {
+  final List<dynamic> _userRootRoutes;
+  final GlobalKey<NavigatorState> rootNavigatorKey;
+  late final List<GlobalKey<NavigatorState>> nestedNavigatorKeys;
 
-  static final rootNavigatorKey = GlobalKey<NavigatorState>();
+  AppRoutes({required List<dynamic> rootRoutes, required this.rootNavigatorKey})
+    : _userRootRoutes = rootRoutes {
+    final tabCount = scaffoldRoutes?.children.length ?? 0;
+    nestedNavigatorKeys = List.generate(
+      tabCount,
+      (_) => GlobalKey<NavigatorState>(),
+    );
+  }
 
-  static final List<GlobalKey<NavigatorState>> nestedNavigatorKeys =
-      List.generate(scaffoldRoutes.length, (_) => GlobalKey<NavigatorState>());
+  ScaffoldRouteConfig? get scaffoldRoutes {
+    final scaffold =
+        _userRootRoutes.whereType<ScaffoldRouteConfig>().firstOrNull;
+    return scaffold;
+  }
 
-  static final Set<RouteConfig> scaffoldRoutes = <RouteConfig>{
-    RouteConfig(path: '/home', builder: (_) => FirstPage(), icon: Icons.home),
-    RouteConfig(
-      path: '/settings',
-      builder: (_) => SettingsPageConnector(),
-      icon: Icons.settings,
-    ),
-    RouteConfig(
-      path: '/profile',
-      builder: (_) => ProfileWidgetConnector(),
-      icon: Icons.person,
-      children: [
-        RouteConfig(path: '/profile/details', builder: (_) => DetailsPage()),
-      ],
-    ),
-  };
+  List<RouteConfig> get rootRoutes {
+    final routes = _userRootRoutes.whereType<RouteConfig>().toList();
 
-  static final Set<RouteConfig> rootRoutes = <RouteConfig>{
-    RouteConfig(path: '/login', builder: (_) => LoginPageConnector()),
-    RouteConfig(
-      path: '/page2',
-      builder:
-          (_) => ScaffoldWithNestedNavigators(
-            mainRoutes: scaffoldRoutes.toList(),
-            navigatorKeys: nestedNavigatorKeys,
-          ),
-    ),
-  };
+    routes.add(
+      RouteConfig(
+        path: '/main',
+        builder:
+            (_) => ScaffoldWithNestedNavigators(
+              mainRoutes: scaffoldRoutes?.children,
+              navigatorKeys: nestedNavigatorKeys,
+            ),
+      ),
+    );
+
+    return routes;
+  }
+
+  GlobalKey<NavigatorState> Function(String route) get navigatorKeyGetter {
+    return (String route) {
+      for (int i = 0; i < scaffoldRoutes!.children.length; i++) {
+        final tabPath = scaffoldRoutes?.children[i].path;
+        final key = nestedNavigatorKeys[i];
+
+        if (route == tabPath || route.startsWith('$tabPath/')) {
+          return key;
+        }
+      }
+
+      return rootNavigatorKey;
+    };
+  }
 
   static RouteConfig? findRoute(String? name, Set<RouteConfig> configs) {
     for (final config in configs) {
@@ -87,4 +98,14 @@ class RouteConfig {
   });
 
   bool get isMainRoute => icon != null;
+}
+
+class ScaffoldRouteConfig {
+  final List<RouteConfig> children;
+  final Widget? bottomNavigationBar;
+
+  const ScaffoldRouteConfig({
+    this.children = const [],
+    this.bottomNavigationBar,
+  });
 }

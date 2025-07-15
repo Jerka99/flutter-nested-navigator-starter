@@ -1,18 +1,20 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/transitions_and_scroll_phisics/custom_page_transition_builder.dart';
 
 import 'app_routes.dart';
+import 'main.dart';
 
 class ScaffoldWithNestedNavigators extends StatefulWidget {
   final List<RouteConfig>? mainRoutes;
   final List<GlobalKey<NavigatorState>> navigatorKeys;
+  final Widget? bottomNavigationBar;
 
   const ScaffoldWithNestedNavigators({
     super.key,
     this.mainRoutes,
     required this.navigatorKeys,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -50,7 +52,7 @@ class _ScaffoldWithNestedNavigatorsState
 
   @override
   void dispose() {
-    NavigateAction.setNavigatorKey(AppRoutes.rootNavigatorKey);
+    NavigateAction.setNavigatorKey(appRoutes.rootNavigatorKey);
     _pageController.dispose();
     super.dispose();
   }

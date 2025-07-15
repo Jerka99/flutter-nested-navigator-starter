@@ -1,5 +1,6 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/cupertino.dart';
+
+import '../main.dart';
 
 class CustomNavigateAction<St> extends NavigateAction<St> {
   CustomNavigateAction._pushNamed(super.route) : super.pushNamed();
@@ -9,21 +10,13 @@ class CustomNavigateAction<St> extends NavigateAction<St> {
 
   CustomNavigateAction._pop() : super.pop();
 
-
-
-  factory CustomNavigateAction.pushNamed(
-    String route,
-    GlobalKey<NavigatorState> navigatorKey,
-  ) {
-    NavigateAction.setNavigatorKey(navigatorKey);
+  factory CustomNavigateAction.pushNamed(String route) {
+    NavigateAction.setNavigatorKey(appRoutes.navigatorKeyGetter(route));
     return CustomNavigateAction._pushNamed(route);
   }
 
-  factory CustomNavigateAction.pushReplacementNamed(
-    String route,
-    GlobalKey<NavigatorState> navigatorKey,
-  ) {
-    NavigateAction.setNavigatorKey(navigatorKey);
+  factory CustomNavigateAction.pushReplacementNamed(String route) {
+    NavigateAction.setNavigatorKey(appRoutes.navigatorKeyGetter(route));
     return CustomNavigateAction._pushReplacementNamed(route);
   }
 

@@ -9,7 +9,7 @@ class Factory extends VmFactory<AppState, LoginPageConnector, ViewModel> {
   ViewModel fromStore() => ViewModel(
     string: store.state.string,
     onPressed: () {
-      dispatch(NavigateAction.pushNamed("/page2"));
+      dispatch(NavigateAction.pushNamed("/main"));
     },
   );
 }
