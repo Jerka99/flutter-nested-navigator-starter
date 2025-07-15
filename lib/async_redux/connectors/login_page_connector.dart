@@ -1,9 +1,10 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/main.dart';
-import '../app_state.dart';
+import 'package:untitled/pages/login_page.dart';
+import '../../../app_state.dart';
 
-class Factory extends VmFactory<AppState, HomeWidgetConnector, ViewModel> {
+class Factory extends VmFactory<AppState, LoginPageConnector, ViewModel> {
   @override
   ViewModel fromStore() => ViewModel(
     string: store.state.string,
@@ -13,15 +14,15 @@ class Factory extends VmFactory<AppState, HomeWidgetConnector, ViewModel> {
   );
 }
 
-class HomeWidgetConnector extends StatelessWidget {
-  const HomeWidgetConnector({super.key});
+class LoginPageConnector extends StatelessWidget {
+  const LoginPageConnector({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, ViewModel>(
       vm: () => Factory(),
       builder: (BuildContext context, ViewModel vm) {
-        return HomeWidget(string: vm.string, onPressed: vm.onPressed);
+        return LoginPage(string: vm.string, onPressed: vm.onPressed);
       },
     );
   }
