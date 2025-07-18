@@ -1,27 +1,37 @@
 import 'package:async_redux/async_redux.dart';
+import 'package:flutter/animation.dart';
+import '../app_routes.dart';
 import '../main.dart';
 
 class CustomNavigateAction<St> extends NavigateAction<St> {
-  CustomNavigateAction._pushNamed(String route, {Object? arguments})
-      : super.pushNamed(route, arguments: arguments);
+  CustomNavigateAction._pushNamed(super.route, {super.arguments})
+    : super.pushNamed();
 
-  CustomNavigateAction._pushReplacementNamed(super.route)
+  CustomNavigateAction._pushReplacementNamed(super.route, {super.arguments})
     : super.pushReplacementNamed();
 
   CustomNavigateAction._pop() : super.pop();
 
-  static Future<void> jumpToPageAndPushNamed(String route) async {
+  static Future<void> jumpToPageAndPushNamed(
+    String route, {
+    PageTransition? pageTransition,
+  }) async {
     final scaffold = appRoutes.scaffoldRoutes;
     if (scaffold != null) {
       for (int i = 0; i < scaffold.children.length; i++) {
         final tabPath = scaffold.children[i].path;
         if (route == tabPath || route.startsWith('/$tabPath/')) {
-          appRoutes.pageController.jumpToPage(i);
           final navigatorKey = appRoutes.navigatorKeyGetter(tabPath);
-          NavigateAction.setNavigatorKey(navigatorKey);
-
-            await Future.delayed(Duration(milliseconds: 20));
-            navigatorKey.currentState?.pushNamed(route);
+          navigatorKey.currentState?.pushNamed(
+            route,
+            arguments: {'pageTransition': pageTransition},
+          );
+          await Future.delayed(Duration(milliseconds: 111));
+          appRoutes.pageController.animateToPage(
+            i,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
 
           break;
         }
@@ -29,9 +39,15 @@ class CustomNavigateAction<St> extends NavigateAction<St> {
     }
   }
 
-  factory CustomNavigateAction.pushNamed(String route) {
+  factory CustomNavigateAction.pushNamed(
+    String route, {
+    PageTransition? pageTransition,
+  }) {
     NavigateAction.setNavigatorKey(appRoutes.navigatorKeyGetter(route));
-    return CustomNavigateAction._pushNamed(route);
+    return CustomNavigateAction._pushNamed(
+      route,
+      arguments: {"pageTransition": pageTransition},
+    );
   }
 
   factory CustomNavigateAction.pushReplacementNamed(String route) {

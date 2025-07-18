@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/scaffold_with_nested_navigators.dart';
 
@@ -55,7 +56,7 @@ class AppRoutes {
         final tabPath = scaffoldRoutes?.children[i].path;
         final key = nestedNavigatorKeys[i];
 
-        if (route == tabPath || route.startsWith('$tabPath/')) {
+        if (route == tabPath || route.startsWith('/$tabPath/')) {
           return key;
         }
       }
@@ -95,19 +96,31 @@ class AppRoutes {
   static Route<dynamic> generateRoutes(
     RouteSettings settings,
     Set<RouteConfig> routes,
+    BuildContext context,
   ) {
     final routeConfig = findRoute(settings.name, routes);
     if (routeConfig?.builder != null) {
-      final noTransition = settings.arguments is Map &&
-          (settings.arguments as Map)['noTransition'] == true;
+      final transitionDisabled =
+          settings.arguments is Map &&
+          (settings.arguments as Map)["pageTransition"] ==
+              PageTransition.disabled;
 
-      if (noTransition) {
-        return PageRouteBuilder(
-          settings: settings,
-          pageBuilder: (context, __, ___) => routeConfig!.builder(context),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        );
+      if (transitionDisabled) {
+        final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+
+        if (isIOS) {
+          return CupertinoPageRoute(
+            settings: settings,
+            builder: (context) => routeConfig!.builder(context),
+          );
+        } else {
+          return PageRouteBuilder(
+            settings: settings,
+            pageBuilder: (context, __, ___) => routeConfig!.builder(context),
+            transitionDuration: Duration(seconds: 0),
+            reverseTransitionDuration: Duration.zero,
+          );
+        }
       }
 
       return MaterialPageRoute(
@@ -163,3 +176,5 @@ class ScaffoldRouteConfig {
     this.pageViewScrollPhysics,
   });
 }
+
+enum PageTransition { enabled, disabled }

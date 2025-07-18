@@ -84,6 +84,7 @@ class MyApp extends StatelessWidget {
           return AppRoutes.generateRoutes(
             settings,
             appRoutes.rootRoutes.toSet(),
+            context
           );
         },
         theme: ThemeData(

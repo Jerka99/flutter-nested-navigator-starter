@@ -25,7 +25,6 @@ class CustomPageTransitionBuilder extends PageTransitionsBuilder {
       );
     }
 
-
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(1.0, 0.0),

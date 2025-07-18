@@ -80,9 +80,9 @@ class _ScaffoldWithNestedNavigatorsState
                 appRoutes.scaffoldRoutes?.children[index].path,
           );
         } else {
-          print(
-            'Tab $index is now visible (${(info.visibleFraction * 100).round()}%)',
-          );
+          // print(
+          //   'Tab $index is now visible (${(info.visibleFraction * 100).round()}%)',
+          // );
         }
       },
       child: NavigatorPopHandler(
@@ -96,6 +96,7 @@ class _ScaffoldWithNestedNavigatorsState
             return AppRoutes.generateRoutes(
               settings,
               widget.mainRoutes!.toSet(),
+              context
             );
           },
         ),
@@ -104,12 +105,10 @@ class _ScaffoldWithNestedNavigatorsState
   }
 
   void _onPageChanged(int index) {
-    print(ModalRoute.of(context)?.settings.name);
     setState(() => _selectedIndex = index);
   }
 
   void _onTap(int index) {
-    print(ModalRoute.of(context)?.settings.name);
     switch (widget.onTapBottomNavBarMode) {
       case OnTapBottomNavBarMode.animateToPage:
         _pageController.animateToPage(
@@ -126,7 +125,7 @@ class _ScaffoldWithNestedNavigatorsState
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
-        physics: widget.pageViewScrollPhysics,
+        // physics: widget.pageViewScrollPhysics,
         controller: _pageController,
         onPageChanged: _onPageChanged,
         itemCount: tabNamesAndIcons?.length,
@@ -157,10 +156,10 @@ enum OnTapBottomNavBarMode { animateToPage, jumpToPage }
 class KeepAliveWrapper extends StatefulWidget {
   final Widget child;
 
-  const KeepAliveWrapper({required this.child});
+  const KeepAliveWrapper({super.key, required this.child});
 
   @override
-  _KeepAliveWrapperState createState() => _KeepAliveWrapperState();
+  State<KeepAliveWrapper> createState() => _KeepAliveWrapperState();
 }
 
 class _KeepAliveWrapperState extends State<KeepAliveWrapper>
