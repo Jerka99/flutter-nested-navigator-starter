@@ -1,18 +1,18 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
 import '../../../app_state.dart';
+import '../../main.dart';
 import '../../pages/profile_page.dart';
-import '../navigation_helper.dart';
 
 class Factory extends VmFactory<AppState, ProfileWidgetConnector, ViewModel> {
   @override
   ViewModel fromStore() => ViewModel(
-    onPressed: () {
-      // NavigateAction.setNavigatorKey(navigatorKey);
-      // dispatch(NavigateAction.pushNamed("/details"));
-      dispatch(CustomNavigateAction.pushNamed(
-          "/profile/details"));
-      // navigatorKeys[0].currentState!.pushNamed("/details");
+    onPressed: () async {
+      appRoutes.nestedNavigatorKeys[0].currentState?.pushNamed(
+        "/home/details",
+        arguments: {'noTransition': true},
+      );
+      appRoutes.pageController.jumpToPage(0);
     },
   );
 }

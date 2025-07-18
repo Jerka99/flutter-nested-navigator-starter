@@ -1,43 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
-import 'package:untitled/pages/details_page.dart';
+import 'package:untitled/async_redux/connectors/details_page_connector.dart';
+import 'package:untitled/async_redux/connectors/profile_connector.dart';
 import 'package:untitled/pages/first_page.dart';
+import 'package:untitled/scaffold_with_nested_navigators.dart';
 import 'package:untitled/transitions_and_scroll_phisics/custom_page_transition_builder.dart';
 import 'app_routes.dart';
 import 'app_state.dart';
 import 'async_redux/connectors/login_page_connector.dart';
 import 'async_redux/connectors/page_2_connector.dart';
-import 'async_redux/connectors/profile_connector.dart';
 
 final store = Store<AppState>(initialState: AppState.initialState());
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRoutes = AppRoutes(
   rootRoutes: [
-    RouteConfig(path: '/login', builder: (_) => LoginPageConnector()),
+    RouteConfig(path: 'login', builder: (_) => LoginPageConnector()),
+    RouteConfig(path: 'smh', builder: (_) => FirstPage()),
     ScaffoldRouteConfig(
+      onInitState: (navigatorKey) {
+        NavigateAction.setNavigatorKey(navigatorKey);
+      },
+      onDispose: () {
+        NavigateAction.setNavigatorKey(rootNavigatorKey);
+      },
+      pageViewScrollPhysics: CustomPageViewScrollPhysics(),
+      onTapBottomNavBarMode: OnTapBottomNavBarMode.jumpToPage,
       children: <RouteConfig>[
         RouteConfig(
-          path: '/home',
+          path: 'home',
           builder: (_) => FirstPage(),
           icon: Icons.home,
+          children: [
+            RouteConfig(
+              path: 'details',
+              builder: (_) => DetailsPageConnector(),
+            ),
+          ],
         ),
         RouteConfig(
-          path: '/settings',
+          path: 'settings',
           builder: (_) => SettingsPageConnector(),
           icon: Icons.settings,
         ),
         RouteConfig(
-          path: '/profile',
+          path: 'profile',
           builder: (_) => ProfileWidgetConnector(),
           icon: Icons.person,
           children: [
-            RouteConfig(
-              path: '/profile/details',
-              builder: (_) => DetailsPage(),
-            ),
+            RouteConfig(path: 'details', builder: (_) => DetailsPageConnector()),
           ],
         ),
+        // RouteConfig(
+        //   path: '/chat',
+        //   builder: (_) => DetailsPageConnector(),
+        //   icon: Icons.chair,
+        // ),
       ],
     ),
   ],
@@ -63,7 +81,6 @@ class MyApp extends StatelessWidget {
         title: 'Demo',
         initialRoute: appRoutes.rootRoutes.first.path,
         onGenerateRoute: (settings) {
-          if (settings.name == "/") return null;
           return AppRoutes.generateRoutes(
             settings,
             appRoutes.rootRoutes.toSet(),

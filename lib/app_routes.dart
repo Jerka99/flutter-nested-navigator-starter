@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:untitled/scaffold_with_nested_navigators.dart';
 
 class AppRoutes {
-  final List<dynamic> _userRootRoutes;
   final GlobalKey<NavigatorState> rootNavigatorKey;
   late final List<GlobalKey<NavigatorState>> nestedNavigatorKeys;
+  final List<dynamic> _userRootRoutes;
 
   AppRoutes({required List<dynamic> rootRoutes, required this.rootNavigatorKey})
     : _userRootRoutes = rootRoutes {
@@ -14,6 +14,8 @@ class AppRoutes {
       (_) => GlobalKey<NavigatorState>(),
     );
   }
+
+  final PageController pageController = PageController();
 
   ScaffoldRouteConfig? get scaffoldRoutes {
     final scaffold =
@@ -26,11 +28,16 @@ class AppRoutes {
 
     routes.add(
       RouteConfig(
-        path: '/main',
+        path: 'main',
         builder:
             (_) => ScaffoldWithNestedNavigators(
               mainRoutes: scaffoldRoutes?.children,
               navigatorKeys: nestedNavigatorKeys,
+              onInitState: scaffoldRoutes?.onInitState,
+              onDispose: scaffoldRoutes?.onDispose,
+              pageController: pageController,
+              pageViewScrollPhysics: scaffoldRoutes?.pageViewScrollPhysics,
+              onTapBottomNavBarMode: scaffoldRoutes?.onTapBottomNavBarMode,
             ),
       ),
     );
@@ -40,6 +47,10 @@ class AppRoutes {
 
   GlobalKey<NavigatorState> Function(String route) get navigatorKeyGetter {
     return (String route) {
+      if (scaffoldRoutes == null) {
+        return rootNavigatorKey;
+      }
+
       for (int i = 0; i < scaffoldRoutes!.children.length; i++) {
         final tabPath = scaffoldRoutes?.children[i].path;
         final key = nestedNavigatorKeys[i];
@@ -48,18 +59,37 @@ class AppRoutes {
           return key;
         }
       }
-
       return rootNavigatorKey;
     };
   }
 
-  static RouteConfig? findRoute(String? name, Set<RouteConfig> configs) {
+  static RouteConfig? findFinalConfig(
+    List<String> parts,
+    List<RouteConfig> configs,
+  ) {
+    if (parts.isEmpty) return null;
+
     for (final config in configs) {
-      if (config.path == name) return config;
-      final match = findRoute(name, config.children.toSet());
-      if (match != null) return match;
+      if (config.path == parts.first) {
+        if (parts.length == 1) {
+          return config;
+        }
+        return findFinalConfig(parts.sublist(1), config.children);
+      }
     }
+
     return null;
+  }
+
+  static RouteConfig? findRoute(String? name, Set<RouteConfig> configs) {
+    final List<String> parts =
+        name!
+            .split('/')
+            .where((part) => part.isNotEmpty)
+            // .map((String part) => "/$part")
+            .toList();
+
+    return findFinalConfig(parts, configs.toList());
   }
 
   static Route<dynamic> generateRoutes(
@@ -68,6 +98,18 @@ class AppRoutes {
   ) {
     final routeConfig = findRoute(settings.name, routes);
     if (routeConfig?.builder != null) {
+      final noTransition = settings.arguments is Map &&
+          (settings.arguments as Map)['noTransition'] == true;
+
+      if (noTransition) {
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, __, ___) => routeConfig!.builder(context),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        );
+      }
+
       return MaterialPageRoute(
         builder: (context) => routeConfig!.builder(context),
         settings: settings,
@@ -81,6 +123,10 @@ class AppRoutes {
           ),
       settings: settings,
     );
+  }
+
+  void dispose() {
+    pageController.dispose();
   }
 }
 
@@ -103,9 +149,17 @@ class RouteConfig {
 class ScaffoldRouteConfig {
   final List<RouteConfig> children;
   final Widget? bottomNavigationBar;
+  final Function(GlobalKey<NavigatorState> navigatorKey)? onInitState;
+  final Function()? onDispose;
+  final OnTapBottomNavBarMode? onTapBottomNavBarMode;
+  final ScrollPhysics? pageViewScrollPhysics;
 
   const ScaffoldRouteConfig({
     this.children = const [],
     this.bottomNavigationBar,
+    this.onInitState,
+    this.onDispose,
+    this.onTapBottomNavBarMode,
+    this.pageViewScrollPhysics,
   });
 }

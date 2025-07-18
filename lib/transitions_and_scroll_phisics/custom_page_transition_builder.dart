@@ -7,12 +7,12 @@ class CustomPageTransitionBuilder extends PageTransitionsBuilder {
 
   @override
   Widget buildTransitions<T>(
-      PageRoute<T> route,
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child,
-      ) {
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
     final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
 
     if (isIOS) {
@@ -25,6 +25,7 @@ class CustomPageTransitionBuilder extends PageTransitionsBuilder {
       );
     }
 
+
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(1.0, 0.0),
@@ -34,7 +35,6 @@ class CustomPageTransitionBuilder extends PageTransitionsBuilder {
     );
   }
 }
-
 
 class CustomPageViewScrollPhysics extends ScrollPhysics {
   const CustomPageViewScrollPhysics({super.parent});

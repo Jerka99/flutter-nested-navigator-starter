@@ -1,7 +1,5 @@
-import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/transitions_and_scroll_phisics/custom_page_transition_builder.dart';
-
+import 'package:visibility_detector/visibility_detector.dart';
 import 'app_routes.dart';
 import 'main.dart';
 
@@ -9,13 +7,26 @@ class ScaffoldWithNestedNavigators extends StatefulWidget {
   final List<RouteConfig>? mainRoutes;
   final List<GlobalKey<NavigatorState>> navigatorKeys;
   final Widget? bottomNavigationBar;
+  final Function(GlobalKey<NavigatorState> navigatorKey)? onInitState;
+  final Function()? onDispose;
+  final PageController pageController;
+  final OnTapBottomNavBarMode onTapBottomNavBarMode;
+  final ScrollPhysics pageViewScrollPhysics;
 
   const ScaffoldWithNestedNavigators({
     super.key,
     this.mainRoutes,
     required this.navigatorKeys,
     this.bottomNavigationBar,
-  });
+    this.onInitState,
+    this.onDispose,
+    required this.pageController,
+    OnTapBottomNavBarMode? onTapBottomNavBarMode,
+    ScrollPhysics? pageViewScrollPhysics,
+  }) : onTapBottomNavBarMode =
+           onTapBottomNavBarMode ?? OnTapBottomNavBarMode.jumpToPage,
+       pageViewScrollPhysics =
+           pageViewScrollPhysics ?? const NeverScrollableScrollPhysics();
 
   @override
   State<ScaffoldWithNestedNavigators> createState() =>
@@ -24,16 +35,13 @@ class ScaffoldWithNestedNavigators extends StatefulWidget {
 
 class _ScaffoldWithNestedNavigatorsState
     extends State<ScaffoldWithNestedNavigators> {
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _selectedIndex = 0;
   late Map<String, IconData>? tabNamesAndIcons;
-  late final List<String> tabRoutes;
   late final List<WidgetBuilder> tabBuilders;
 
   @override
   void initState() {
-    tabRoutes =
-        widget.mainRoutes!.map((mainRoutes) => mainRoutes.path).toList();
     tabBuilders =
         widget.mainRoutes!.map((mainRoutes) => mainRoutes.builder).toList();
 
@@ -41,7 +49,10 @@ class _ScaffoldWithNestedNavigatorsState
       for (final mainRoute in widget.mainRoutes!)
         if (mainRoute.icon != null) mainRoute.path: mainRoute.icon!,
     };
-    NavigateAction.setNavigatorKey(widget.navigatorKeys[_selectedIndex]);
+    if (widget.onInitState != null) {
+      widget.onInitState!(widget.navigatorKeys[_selectedIndex]);
+    }
+    _pageController = widget.pageController;
     super.initState();
   }
 
@@ -52,24 +63,36 @@ class _ScaffoldWithNestedNavigatorsState
 
   @override
   void dispose() {
-    NavigateAction.setNavigatorKey(appRoutes.rootNavigatorKey);
-    _pageController.dispose();
+    if (widget.onDispose != null) {
+      widget.onDispose!();
+    }
     super.dispose();
   }
 
   Widget _buildNavigatorPage(int index, String initialRoute) {
-    return Container(
-      color: Colors.white,
-
+    return VisibilityDetector(
+      key: Key('tab-$index'),
+      onVisibilityChanged: (info) {
+        if (info.visibleFraction == 0.0) {
+          widget.navigatorKeys[index].currentState?.popUntil(
+            (route) =>
+                route.settings.name ==
+                appRoutes.scaffoldRoutes?.children[index].path,
+          );
+        } else {
+          print(
+            'Tab $index is now visible (${(info.visibleFraction * 100).round()}%)',
+          );
+        }
+      },
       child: NavigatorPopHandler(
         onPopWithResult: (_) {
-          widget.navigatorKeys[index].currentState?.pop();
+          widget.navigatorKeys[index].currentState?.maybePop();
         },
         child: Navigator(
           key: widget.navigatorKeys[index],
           initialRoute: initialRoute,
           onGenerateRoute: (RouteSettings settings) {
-            if (settings.name == "/") return null;
             return AppRoutes.generateRoutes(
               settings,
               widget.mainRoutes!.toSet(),
@@ -81,42 +104,39 @@ class _ScaffoldWithNestedNavigatorsState
   }
 
   void _onPageChanged(int index) {
-    // NavigateAction.setNavigatorKey(widget.navigatorKeys[index]);
+    print(ModalRoute.of(context)?.settings.name);
     setState(() => _selectedIndex = index);
   }
 
   void _onTap(int index) {
-    // NavigateAction.setNavigatorKey(widget.navigatorKeys[index]);
-    // _pageController.animateToPage(
-    //   index,
-    //   duration: const Duration(milliseconds: 300),
-    //   curve: Curves.easeInOut,
-    // );
-    // store.dispatch(
-    //   CustomNavigateAction.pushReplacementNamed(
-    //     '/profile',
-    //     widget.navigatorKeys[2],
-    //   ),
-    // );
-    _pageController.jumpToPage(index);
+    print(ModalRoute.of(context)?.settings.name);
+    switch (widget.onTapBottomNavBarMode) {
+      case OnTapBottomNavBarMode.animateToPage:
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      case OnTapBottomNavBarMode.jumpToPage:
+        _pageController.jumpToPage(index);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
-        physics: CustomPageViewScrollPhysics(),
-        //NeverScrollablePhysics
+        physics: widget.pageViewScrollPhysics,
         controller: _pageController,
         onPageChanged: _onPageChanged,
         itemCount: tabNamesAndIcons?.length,
-        itemBuilder:
-            (context, index) => _buildNavigatorPage(
-              index,
-              tabNamesAndIcons!.keys.toList()[index],
-            ),
+        itemBuilder: (context, index) {
+          final routeName = tabNamesAndIcons!.keys.toList()[index];
+          return KeepAliveWrapper(child: _buildNavigatorPage(index, routeName));
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _onTap,
         items: [
@@ -129,5 +149,28 @@ class _ScaffoldWithNestedNavigatorsState
         ],
       ),
     );
+  }
+}
+
+enum OnTapBottomNavBarMode { animateToPage, jumpToPage }
+
+class KeepAliveWrapper extends StatefulWidget {
+  final Widget child;
+
+  const KeepAliveWrapper({required this.child});
+
+  @override
+  _KeepAliveWrapperState createState() => _KeepAliveWrapperState();
+}
+
+class _KeepAliveWrapperState extends State<KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
