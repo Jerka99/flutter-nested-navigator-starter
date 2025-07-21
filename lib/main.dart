@@ -24,7 +24,7 @@ final appRoutes = AppRoutes(
       onDispose: () {
         NavigateAction.setNavigatorKey(rootNavigatorKey);
       },
-      pageViewScrollPhysics: CustomPageViewScrollPhysics(),
+      // pageViewScrollPhysics: CustomPageViewScrollPhysics(),
       onTapBottomNavBarMode: OnTapBottomNavBarMode.jumpToPage,
       children: <RouteConfig>[
         RouteConfig(
@@ -48,7 +48,10 @@ final appRoutes = AppRoutes(
           builder: (_) => ProfileWidgetConnector(),
           icon: Icons.person,
           children: [
-            RouteConfig(path: 'details', builder: (_) => DetailsPageConnector()),
+            RouteConfig(
+              path: 'details',
+              builder: (_) => DetailsPageConnector(),
+            ),
           ],
         ),
         // RouteConfig(
@@ -84,17 +87,17 @@ class MyApp extends StatelessWidget {
           return AppRoutes.generateRoutes(
             settings,
             appRoutes.rootRoutes.toSet(),
-            context
+            context,
           );
         },
         theme: ThemeData(
           scaffoldBackgroundColor: Colors.transparent,
           highlightColor: Colors.transparent,
           splashFactory: NoSplash.splashFactory,
-          pageTransitionsTheme: const PageTransitionsTheme(
+          pageTransitionsTheme: PageTransitionsTheme(
             builders: {
               TargetPlatform.android: CustomPageTransitionBuilder(),
-              TargetPlatform.iOS: CustomPageTransitionBuilder(),
+              TargetPlatform.iOS: CustomPageTransitionBuilderIOS(),
             },
           ),
         ),

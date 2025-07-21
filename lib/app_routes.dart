@@ -1,6 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/scaffold_with_nested_navigators.dart';
+import 'package:untitled/transitions_and_scroll_phisics/custom_page_transition_builder.dart';
+
+typedef RoutePageBuilder =
+    Widget Function(
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+    );
 
 class AppRoutes {
   final GlobalKey<NavigatorState> rootNavigatorKey;
@@ -109,9 +117,14 @@ class AppRoutes {
         final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
 
         if (isIOS) {
-          return CupertinoPageRoute(
-            settings: settings,
-            builder: (context) => routeConfig!.builder(context),
+          // return MaterialPageRoute(
+          //   builder: (context) => routeConfig!.builder(context),
+          //   settings: settings,
+          // );
+          return CustomPageRouteBuilder(
+            builder:
+                (context, animation, secondaryAnimation) =>
+                    routeConfig!.builder(context),
           );
         } else {
           return PageRouteBuilder(

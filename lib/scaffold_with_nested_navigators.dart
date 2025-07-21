@@ -124,6 +124,7 @@ class _ScaffoldWithNestedNavigatorsState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: PageView.builder(
         // physics: widget.pageViewScrollPhysics,
         controller: _pageController,

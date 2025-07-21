@@ -1,5 +1,4 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:flutter/animation.dart';
 import '../app_routes.dart';
 import '../main.dart';
 
@@ -26,12 +25,8 @@ class CustomNavigateAction<St> extends NavigateAction<St> {
             route,
             arguments: {'pageTransition': pageTransition},
           );
-          await Future.delayed(Duration(milliseconds: 111));
-          appRoutes.pageController.animateToPage(
-            i,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
+          // await Future.delayed(Duration(milliseconds: 111));
+          appRoutes.pageController.jumpToPage(i);
 
           break;
         }
