@@ -12,19 +12,21 @@ class DetailsPage extends StatefulWidget {
 class _DetailsPageState extends State<DetailsPage> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.cyan,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(child: Text("fd")),
-          TextButton(
-            onPressed: () {
-
-            },
-            child: Text("smh"),
-          ),
-        ],
+    return Scaffold(
+      body: Container(
+        color: Colors.cyan,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(child: Text("fd")),
+            TextButton(
+              onPressed: () {
+      
+              },
+              child: Text("smh"),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,22 +1,18 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/scaffold_with_nested_navigators.dart';
-import 'package:untitled/transitions_and_scroll_phisics/custom_page_transition_builder.dart';
-
-typedef RoutePageBuilder =
-    Widget Function(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-    );
+import 'package:my_flutter_library/scaffold_with_nested_navigators.dart';
+import 'custom_page_route_builder.dart';
 
 class AppRoutes {
+  static AppRoutes? _instance;
+
   final GlobalKey<NavigatorState> rootNavigatorKey;
   late final List<GlobalKey<NavigatorState>> nestedNavigatorKeys;
   final List<dynamic> _userRootRoutes;
 
-  AppRoutes({required List<dynamic> rootRoutes, required this.rootNavigatorKey})
-    : _userRootRoutes = rootRoutes {
+  AppRoutes._internal({
+    required List<dynamic> rootRoutes,
+    required this.rootNavigatorKey,
+  }) : _userRootRoutes = rootRoutes {
     final tabCount = scaffoldRoutes?.children.length ?? 0;
     nestedNavigatorKeys = List.generate(
       tabCount,
@@ -24,7 +20,30 @@ class AppRoutes {
     );
   }
 
+  static void initialize({
+    required List<dynamic> rootRoutes,
+    required GlobalKey<NavigatorState> rootNavigatorKey,
+  }) {
+    if (_instance == null) {
+      _instance = AppRoutes._internal(
+        rootRoutes: rootRoutes,
+        rootNavigatorKey: rootNavigatorKey,
+      );
+    } else {
+      throw Exception('AppRoutes has already been initialized');
+    }
+  }
+
   final PageController pageController = PageController();
+
+  static AppRoutes get instance {
+    if (_instance == null) {
+      throw Exception(
+        'AppRoutes not initialized. Call AppRoutes.initialize(...) first.',
+      );
+    }
+    return _instance!;
+  }
 
   ScaffoldRouteConfig? get scaffoldRoutes {
     final scaffold =

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'app_routes.dart';
-import 'main.dart';
 
 class ScaffoldWithNestedNavigators extends StatefulWidget {
   final List<RouteConfig>? mainRoutes;
@@ -77,7 +76,7 @@ class _ScaffoldWithNestedNavigatorsState
           widget.navigatorKeys[index].currentState?.popUntil(
             (route) =>
                 route.settings.name ==
-                appRoutes.scaffoldRoutes?.children[index].path,
+                AppRoutes.instance.scaffoldRoutes?.children[index].path,
           );
         } else {
           // print(
@@ -90,13 +89,17 @@ class _ScaffoldWithNestedNavigatorsState
           widget.navigatorKeys[index].currentState?.maybePop();
         },
         child: Navigator(
+          pages: const <Page<dynamic>>[
+          ],
+          onDidRemovePage: (_) {},
+          observers: [LoggingNavigatorObserver()],
           key: widget.navigatorKeys[index],
           initialRoute: initialRoute,
           onGenerateRoute: (RouteSettings settings) {
             return AppRoutes.generateRoutes(
               settings,
               widget.mainRoutes!.toSet(),
-              context
+              context,
             );
           },
         ),
@@ -172,5 +175,54 @@ class _KeepAliveWrapperState extends State<KeepAliveWrapper>
   Widget build(BuildContext context) {
     super.build(context);
     return widget.child;
+  }
+}
+
+class LoggingNavigatorObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    debugPrint('NavigatorObserver: didPush ${route.settings.name}');
+    super.didPush(route, previousRoute);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    debugPrint('NavigatorObserver: didPop ${route.settings.name}');
+    super.didPop(route, previousRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    debugPrint('NavigatorObserver: didRemove ${route.settings.name}');
+    super.didRemove(route, previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    debugPrint(
+      'NavigatorObserver: didReplace newRoute: ${newRoute?.settings.name} oldRoute: ${oldRoute?.settings.name}',
+    );
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+  }
+
+  @override
+  void didStartUserGesture(Route route, Route? previousRoute) {
+    // TODO: implement didStartUserGesture
+    super.didStartUserGesture(route, previousRoute);
+  }
+
+  @override
+  void didChangeTop(Route topRoute, Route? previousTopRoute) {
+    // TODO: implement didChangeTop
+    super.didChangeTop(topRoute, previousTopRoute);
+  }
+}
+
+class IDK extends StatelessWidget {
+  const IDK({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(color: Colors.purple);
   }
 }

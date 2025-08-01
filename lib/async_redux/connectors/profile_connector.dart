@@ -1,7 +1,5 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/app_routes.dart';
-import 'package:untitled/async_redux/navigation_helper.dart';
 import '../../../app_state.dart';
 import '../../pages/profile_page.dart';
 
@@ -9,10 +7,10 @@ class Factory extends VmFactory<AppState, ProfileWidgetConnector, ViewModel> {
   @override
   ViewModel fromStore() => ViewModel(
     onPressed: () async {
-      CustomNavigateAction.jumpToPageAndPushNamed(
-        "/home/details",
-        pageTransition: PageTransition.disabled,
-      );
+      // CustomNavigateAction.jumpToPageAndPushNamed(
+      //   "/home/details",
+      //   pageTransition: PageTransition.disabled,
+      // );
       // appRoutes.nestedNavigatorKeys[0].currentState?.pushNamed(
       //   "/home/details",
       //   “

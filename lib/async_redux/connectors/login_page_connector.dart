@@ -1,6 +1,5 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/async_redux/navigation_helper.dart';
 import 'package:untitled/main.dart';
 import 'package:untitled/pages/login_page.dart';
 import '../../../app_state.dart';
@@ -10,7 +9,7 @@ class Factory extends VmFactory<AppState, LoginPageConnector, ViewModel> {
   ViewModel fromStore() => ViewModel(
     string: store.state.string,
     onPressed: () {
-      dispatch(CustomNavigateAction.pushNamed("/main"));
+      navigationService.push("/profile/details");
     },
   );
 }

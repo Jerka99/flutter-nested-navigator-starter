@@ -1,6 +1,5 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/main.dart';
 import 'package:untitled/pages/details_page.dart';
 import '../../../app_state.dart';
 
@@ -11,8 +10,8 @@ class Factory extends VmFactory<AppState, DetailsPageConnector, ViewModel> {
       // appRoutes.nestedNavigatorKeys[0].currentState
       //     ?.pushNamed('/details'); // or pushReplacement if needed
 
-      appRoutes.nestedNavigatorKeys[2].currentState
-          ?.pushNamed('/profile/details');
+      // AppRoutes.instance.nestedNavigatorKeys[2].currentState
+      //     ?.pushNamed('/profile/details');
     // CustomNavigateAction.jumpToPageAndPushNamed("home/details");
 // // 2. Delay the page switch just a bit
 //       Future.delayed(Duration(milliseconds: 50), () {
