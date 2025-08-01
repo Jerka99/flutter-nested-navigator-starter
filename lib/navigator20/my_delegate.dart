@@ -6,7 +6,7 @@ class SimpleRouterDelegate extends RouterDelegate<String>
   @override
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  final String initialRoute = "login";
+  final String initialRoute = "/";
   List<String> _pageStack = [];
 
   SimpleRouterDelegate() {
@@ -27,9 +27,6 @@ class SimpleRouterDelegate extends RouterDelegate<String>
   void pushReplacement(String route) {
     route = route.substring(1);
     _pageStack = _splitPath(route);
-    if (_pageStack.isEmpty) {
-      _pageStack = [initialRoute];
-    }
     notifyListeners();
   }
 
@@ -74,10 +71,10 @@ class SimpleRouterDelegate extends RouterDelegate<String>
   @override
   Future<void> setNewRoutePath(String configuration) async {
     if (configuration.isEmpty || configuration == initialRoute) {
-      _pageStack = [initialRoute];
-    } else {
-      _pageStack = _splitPath(configuration);
+      //   _pageStack = [initialRoute];
     }
+    //   _pageStack = _splitPath(configuration);
+    // }
     notifyListeners();
   }
 

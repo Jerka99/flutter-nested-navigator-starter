@@ -44,7 +44,7 @@ class AppRoutes {
   ];
   static final List<RouteConfig> unsecuredRoutes = [
     RouteConfig(
-      path: "login",
+      path: "/",
       child: LoginPageConnector(),
       children: [
         RouteConfig(
@@ -81,16 +81,10 @@ class AppRoutes {
     return null;
   }
 
-  static List<RouteConfig> resolveWidgetStack(List<String> pageStack, String initialRoute) {
-    final RouteConfig root = routes.firstWhere(
-          (r) => r.path == initialRoute,
-      orElse: () => RouteConfig(path: '/', child: Placeholder()),
-    );
-
-    if (pageStack.isEmpty) {
-      return [root];
-    }
-
+  static List<RouteConfig> resolveWidgetStack(
+    List<String> pageStack,
+    String initialRoute,
+  ) {
     final nested = _resolveWidgetStackRecursive(pageStack, routes);
     return [...nested];
   }
