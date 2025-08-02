@@ -8,7 +8,7 @@ class Factory extends VmFactory<AppState, DetailsPageConnector, ViewModel> {
   @override
   ViewModel fromStore() => ViewModel(
     onPressed: () async {
-      navigationService.pushReplacement("/");
+      navigationService.pushReplacement("/home");
       // appRoutes.nestedNavigatorKeys[0].currentState
       //     ?.pushNamed('/details'); // or pushReplacement if needed
 

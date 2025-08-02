@@ -20,6 +20,8 @@ class RouteConfig {
 }
 
 class AppRoutes {
+  static String initialRoute = "login";
+
   static final List<RouteConfig> securedRoutes = [
     RouteConfig(
       path: "home",
@@ -36,7 +38,7 @@ class AppRoutes {
       ],
     ),
     RouteConfig(
-      path: "profile",
+      path: "nothing",
       child: ProfileWidgetConnector(),
       icon: Icons.person,
       children: [RouteConfig(path: 'details', child: DetailsPageConnector())],
@@ -44,7 +46,7 @@ class AppRoutes {
   ];
   static final List<RouteConfig> unsecuredRoutes = [
     RouteConfig(
-      path: "login",
+      path: initialRoute,
       child: LoginPageConnector(),
       children: [
         RouteConfig(
@@ -94,7 +96,19 @@ class AppRoutes {
     List<String> pageStack,
     String initialRoute,
   ) {
-    final nested = _resolveWidgetStackRecursive(pageStack, routes);
+    List<RouteConfig> newRoutes =
+        routes.map((r) {
+          if (r.path == "/") {
+            return RouteConfig(
+              path: "root",
+              child: r.child,
+              children: r.children,
+            );
+          }
+          return r;
+        }).toList();
+
+    final nested = _resolveWidgetStackRecursive(pageStack, newRoutes);
     return [...nested];
   }
 
