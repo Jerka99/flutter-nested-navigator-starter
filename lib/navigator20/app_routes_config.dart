@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/pages/first_page.dart';
-
-import '../async_redux/connectors/details_page_connector.dart';
-import '../async_redux/connectors/login_page_connector.dart';
-import '../async_redux/connectors/profile_connector.dart';
 
 class RouteConfig {
   final String path;
@@ -19,83 +14,34 @@ class RouteConfig {
   });
 }
 
-class AppRoutes {
-  static String initialRoute = "login";
+class RouteService {
+  final List<RouteConfig> securedRoutes;
+  final List<RouteConfig> unsecuredRoutes;
+  final String initialSecuredRoute;
+  final String initialUnsecuredRoute;
+  final bool loggedIn;
 
-  static final List<RouteConfig> securedRoutes = [
-    RouteConfig(
-      path: "home",
-      child: FirstPage(),
-      icon: Icons.home,
-      children: [
-        RouteConfig(
-          path: 'details',
-          child: DetailsPageConnector(),
-          children: [
-            RouteConfig(path: 'about', child: ProfileWidgetConnector()),
-          ],
-        ),
-      ],
-    ),
-    RouteConfig(
-      path: "nothing",
-      child: ProfileWidgetConnector(),
-      icon: Icons.person,
-      children: [RouteConfig(path: 'details', child: DetailsPageConnector())],
-    ),
-  ];
-  static final List<RouteConfig> unsecuredRoutes = [
-    RouteConfig(
-      path: initialRoute,
-      child: LoginPageConnector(),
-      children: [
-        RouteConfig(
-          path: "profile",
-          child: ProfileWidgetConnector(),
-          icon: Icons.person,
-          children: [
-            RouteConfig(
-              path: 'details',
-              child: DetailsPageConnector(),
-              children: [
-                RouteConfig(
-                  path: ':id',
-                  child: Scaffold(body: Container(color: Colors.red)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ),
-  ];
+  RouteService({
+    required this.securedRoutes,
+    required this.unsecuredRoutes,
+    required this.loggedIn,
+    String? initialSecuredRoute,
+    String? initialUnsecuredRoute,
+  }) : initialSecuredRoute = securedRoutes.first.path,
+       initialUnsecuredRoute = unsecuredRoutes.first.path;
 
-  static List<RouteConfig> get routes => [...securedRoutes, ...unsecuredRoutes];
+  String get initialRoute =>
+      loggedIn ? initialSecuredRoute : initialUnsecuredRoute;
 
-  static Widget? resolveWidget(String fullPath) {
-    final segments = fullPath.split('/').where((s) => s.isNotEmpty).toList();
-    return _resolveRecursive(segments.isEmpty ? ["/"] : segments, routes);
-  }
-
-  static Widget? _resolveRecursive(
-    List<String> segments,
-    List<RouteConfig> configs,
-  ) {
-    if (segments.isEmpty) return null;
-    final head = segments.first;
-    for (final config in configs) {
-      if (config.path == head) {
-        if (segments.length == 1) return config.child;
-        return _resolveRecursive(segments.sublist(1), config.children);
-      }
+  List<RouteConfig> get routes {
+    if (loggedIn) {
+      return securedRoutes;
+    } else {
+      return unsecuredRoutes;
     }
-    return null;
   }
 
-  static List<RouteConfig> resolveWidgetStack(
-    List<String> pageStack,
-    String initialRoute,
-  ) {
+  List<RouteConfig> resolveWidgetStack(List<String> pageStack) {
     List<RouteConfig> newRoutes =
         routes.map((r) {
           if (r.path == "/") {

@@ -3,14 +3,16 @@ import 'app_routes_config.dart';
 
 class SimpleRouterDelegate extends RouterDelegate<String>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin {
+  final RouteService routeService;
   @override
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  final String initialRoute = AppRoutes.initialRoute == "/" ? "root" : AppRoutes.initialRoute;
   List<String> _pageStack = [];
 
-  SimpleRouterDelegate() {
-    _pageStack = [initialRoute == "/" ? "root" : initialRoute];
+  SimpleRouterDelegate({required this.routeService}) {
+    _pageStack = [
+      routeService.initialRoute == "/" ? "root" : routeService.initialRoute,
+    ];
   }
 
   @override
@@ -43,7 +45,9 @@ class SimpleRouterDelegate extends RouterDelegate<String>
       }
       if (isPrefix) {
         // We are currently inside the 'route' subtree, ignore replacement to avoid unwanted pop
-        debugPrint("pushReplacement ignored: trying to replace with parent route $route");
+        debugPrint(
+          "pushReplacement ignored: trying to replace with parent route $route",
+        );
         return;
       }
     }
@@ -66,34 +70,35 @@ class SimpleRouterDelegate extends RouterDelegate<String>
 
   @override
   Widget build(BuildContext context) {
-    final List<RouteConfig> routeConfigList = AppRoutes.resolveWidgetStack(
+    final List<RouteConfig> routeConfigList = routeService.resolveWidgetStack(
       _pageStack,
-      initialRoute,
     );
 
-    return Navigator(
-      key: navigatorKey,
-      pages:
-          routeConfigList
-              .map(
-                (RouteConfig routeConfig) => MaterialPage(
-                  name: routeConfig.path,
-                  child: routeConfig.child,
-                  key: ValueKey(routeConfig.child.runtimeType),
-                ),
-              )
-              .toList(),
-      onDidRemovePage: (route) {
-        pop(route.name!);
-        return;
-      },
-    );
+    return routeConfigList.isEmpty
+        ? SizedBox.shrink()
+        : Navigator(
+          key: navigatorKey,
+          pages:
+              routeConfigList
+                  .map(
+                    (RouteConfig routeConfig) => MaterialPage(
+                      name: routeConfig.path,
+                      child: routeConfig.child,
+                      key: ValueKey(routeConfig.child.runtimeType),
+                    ),
+                  )
+                  .toList(),
+          onDidRemovePage: (route) {
+            pop(route.name!);
+            return;
+          },
+        );
   }
 
   @override
   Future<void> setNewRoutePath(String configuration) async {
     if (configuration.isEmpty) {
-      _pageStack = [initialRoute];
+      _pageStack = [routeService.initialRoute];
     } else {
       _pageStack = _splitPath(configuration);
     }
@@ -101,9 +106,8 @@ class SimpleRouterDelegate extends RouterDelegate<String>
   }
 
   List<String> _splitPath(String path) {
-    final trimmed = path.trim();
-    if (trimmed.isEmpty || trimmed == '/') return ['root'];
-    return trimmed.split('/').where((s) => s.isNotEmpty).toList();
+    if (path.isEmpty || path == '/') return ['root'];
+    return path.split('/').where((s) => s.isNotEmpty).toList();
   }
 
   bool _isValidRoute(String route) {
@@ -113,7 +117,7 @@ class SimpleRouterDelegate extends RouterDelegate<String>
       debugPrint("Rejected route with raw placeholder: $route");
       return false;
     }
-    final resolved = AppRoutes.resolveWidgetStack(segments, initialRoute);
+    final resolved = routeService.resolveWidgetStack(segments);
     final isValid = resolved.isNotEmpty;
 
     if (!isValid) {

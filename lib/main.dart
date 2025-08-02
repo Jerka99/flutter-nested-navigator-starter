@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:async_redux/async_redux.dart';
+import 'package:untitled/navigator20/route_definitions.dart';
 import 'package:untitled/transitions_and_scroll_phisics/custom_page_transition_builder.dart';
 import 'app_state.dart';
+import 'navigator20/app_routes_config.dart';
 import 'navigator20/my_delegate.dart';
 import 'navigator20/my_info_parser.dart';
 import 'navigator20/navigation_service.dart';
@@ -12,6 +14,7 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 void main() {
   runApp(MyApp(store: store));
 }
+
 final NavigationService navigationService = NavigationService();
 
 class MyApp extends StatelessWidget {
@@ -21,15 +24,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SimpleRouterDelegate _routerDelegate = SimpleRouterDelegate();
-    final SimpleRouteParser _routeParser = SimpleRouteParser();
-    navigationService.initialize(_routerDelegate.pushReplacement, _routerDelegate.push);
+    RouteService routeService = RouteService(
+      securedRoutes: securedRoutes,
+      unsecuredRoutes: unsecuredRoutes,
+      loggedIn: true,
+    );
+    final SimpleRouterDelegate routerDelegate = SimpleRouterDelegate(
+      routeService: routeService,
+    );
+    final SimpleRouteParser routeParser = SimpleRouteParser();
+    navigationService.initialize(
+      routerDelegate.pushReplacement,
+      routerDelegate.push,
+    );
 
     return StoreProvider<AppState>(
       store: store,
       child: MaterialApp.router(
-        routerDelegate: _routerDelegate,
-        routeInformationParser: _routeParser,
+        routerDelegate: routerDelegate,
+        routeInformationParser: routeParser,
         title: 'Demo',
         theme: ThemeData(
           scaffoldBackgroundColor: Colors.transparent,
