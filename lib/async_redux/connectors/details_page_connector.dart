@@ -1,5 +1,6 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:flutter/material.dart';
+import 'package:untitled/main.dart';
 import 'package:untitled/pages/details_page.dart';
 import '../../../app_state.dart';
 
@@ -7,6 +8,7 @@ class Factory extends VmFactory<AppState, DetailsPageConnector, ViewModel> {
   @override
   ViewModel fromStore() => ViewModel(
     onPressed: () async {
+      navigationService.pushReplacement("/");
       // appRoutes.nestedNavigatorKeys[0].currentState
       //     ?.pushNamed('/details'); // or pushReplacement if needed
 

@@ -6,11 +6,10 @@ class SimpleRouterDelegate extends RouterDelegate<String>
   @override
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-  final String initialRoute = "/";
+  final String initialRoute = "login";
   List<String> _pageStack = [];
 
   SimpleRouterDelegate() {
-    // Initialize stack with the initial route
     _pageStack = [initialRoute];
   }
 
@@ -18,14 +17,16 @@ class SimpleRouterDelegate extends RouterDelegate<String>
   String get currentConfiguration => _pageStack.join("/").replaceAll('//', '/');
 
   void push(String route) {
-    route = route.substring(1);
-    final List<String> segments = _splitPath(route);
+    if (!_isValidRoute(route)) return;
+
+    final segments = _splitPath(route.substring(1));
     _pageStack.addAll(segments);
     notifyListeners();
   }
 
   void pushReplacement(String route) {
-    route = route.substring(1);
+    if (!_isValidRoute(route)) return;
+
     _pageStack = _splitPath(route);
     notifyListeners();
   }
@@ -80,5 +81,22 @@ class SimpleRouterDelegate extends RouterDelegate<String>
 
   List<String> _splitPath(String path) {
     return path.split('/').where((s) => s.isNotEmpty).toList();
+  }
+
+  bool _isValidRoute(String route) {
+    final cleanRoute = route.startsWith("/") ? route.substring(1) : route;
+    final List<String> segments = _splitPath(cleanRoute);
+    if (segments.any((s) => s.startsWith(":"))) {
+      debugPrint("Rejected route with raw placeholder: $route");
+      return false;
+    }
+    final resolved = AppRoutes.resolveWidgetStack(segments, initialRoute);
+    final isValid = resolved.isNotEmpty;
+
+    if (!isValid) {
+      debugPrint("Invalid route: $route");
+    }
+
+    return isValid;
   }
 }

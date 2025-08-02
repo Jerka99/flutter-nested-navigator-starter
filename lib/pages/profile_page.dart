@@ -17,6 +17,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Text("profile"),
           TextButton(
             onPressed: () {
               widget.onPressed();

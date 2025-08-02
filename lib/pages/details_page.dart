@@ -18,10 +18,10 @@ class _DetailsPageState extends State<DetailsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Center(child: Text("fd")),
+            Center(child: Text("details")),
             TextButton(
               onPressed: () {
-      
+                widget.onPressed();
               },
               child: Text("smh"),
             ),

@@ -44,7 +44,7 @@ class AppRoutes {
   ];
   static final List<RouteConfig> unsecuredRoutes = [
     RouteConfig(
-      path: "/",
+      path: "login",
       child: LoginPageConnector(),
       children: [
         RouteConfig(
@@ -52,7 +52,16 @@ class AppRoutes {
           child: ProfileWidgetConnector(),
           icon: Icons.person,
           children: [
-            RouteConfig(path: 'details', child: DetailsPageConnector()),
+            RouteConfig(
+              path: 'details',
+              child: DetailsPageConnector(),
+              children: [
+                RouteConfig(
+                  path: ':id',
+                  child: Scaffold(body: Container(color: Colors.red)),
+                ),
+              ],
+            ),
           ],
         ),
       ],
